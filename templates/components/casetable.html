@@ -1,0 +1,25 @@
+<html>
+    <div>
+	<table>
+	    <thead>
+		<tr>
+		    <th>Case ID</th>
+		    <th>Case Message</th>
+		    <th>Case Status</th>
+		</tr>
+	    </thead>
+	    <tbody>
+		{% if cases %}
+		    {% for case in cases %}
+			<tr>
+			    <td>{{ case.id }}</td>
+			    <td>{{ case.message }}</td>
+			    <td>{{ case.status }}</td>
+			</tr>
+		    {% endfor %}
+		{% endif %}
+	    </tbody>
+	</table>
+    </div>
+</html>
+
