@@ -28,7 +28,7 @@ async fn main() {
         .route("/casetable", get(case_table))
         .route("/cases", get(cases))
         .nest_service("/static", ServeDir::new("static")); //HTTP file directory access
-    let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
+    let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
     axum::Server::bind(&addr)
         .serve(app.into_make_service())
         .await
@@ -53,6 +53,11 @@ async fn case_table() -> (StatusCode, Html<String>) {
             id: 2,
             message: "Test2".to_string(),
             status: "Closed".to_string(),
+        },
+        Case {
+            id: 3,
+            message: "A man named Joe Biden threaten to send the FBI to my house if I did not pay him 500 pesos".to_string(),
+            status: "Open".to_string(),
         },
     ];
     let mut ctx = tera::Context::new();
