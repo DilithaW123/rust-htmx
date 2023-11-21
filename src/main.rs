@@ -1,9 +1,9 @@
 use std::net::SocketAddr;
 
-use axum::{http::StatusCode, response::Html, routing::get, Router};
+use axum::{extract::State, http::StatusCode, response::Html, routing::get, Router};
 use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
-use sqlx::postgres::PgPoolOptions;
+use sqlx::{postgres::PgPoolOptions, FromRow, PgPool, Postgres};
 use tera::Tera;
 use tower_http::services::ServeDir;
 
@@ -45,31 +45,19 @@ async fn main() {
         .unwrap();
 }
 
-#[derive(Serialize, Deserialize)]
+// Serde serialization/deserialization and SQLx database row mapping
+#[derive(Serialize, Deserialize, FromRow)]
 struct Case {
     id: i32,
     message: String,
     status: String,
 }
 
-async fn case_table() -> (StatusCode, Html<String>) {
-    let cases = vec![
-        Case {
-            id: 1,
-            message: "Test".to_string(),
-            status: "Open".to_string(),
-        },
-        Case {
-            id: 2,
-            message: "Test2".to_string(),
-            status: "Closed".to_string(),
-        },
-        Case {
-            id: 3,
-            message: "A man named Joe Biden threaten to send the FBI to my house if I did not pay him 500 pesos".to_string(),
-            status: "Open".to_string(),
-        },
-    ];
+async fn case_table(State(pool): State<PgPool>) -> (StatusCode, Html<String>) {
+    let cases = sqlx::query_as::<Postgres, Case>("SELECT * FROM cases LIMIT 10")
+        .fetch_all(&pool)
+        .await
+        .unwrap_or(vec![]); // Query database for cases, if error -> empty vector
     let mut ctx = tera::Context::new();
     ctx.insert("cases", &cases);
     match TEMPLATES.render("components/casetable.html", &ctx) {
