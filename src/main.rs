@@ -3,6 +3,7 @@ use std::net::SocketAddr;
 use axum::{http::StatusCode, response::Html, routing::get, Router};
 use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
+use sqlx::postgres::PgPoolOptions;
 use tera::Tera;
 use tower_http::services::ServeDir;
 
@@ -23,11 +24,20 @@ lazy_static! {
 #[tokio::main]
 async fn main() {
     println!("Starting server");
+
+    let pool = PgPoolOptions::new()
+        .max_connections(5)
+        .connect("postgres://postgres:password@localhost/test")
+        .await
+        .unwrap(); // Panic if can't connect to database
+
     let app = Router::new()
         .route("/", get(index))
         .route("/casetable", get(case_table))
         .route("/cases", get(cases))
-        .nest_service("/static", ServeDir::new("static")); //HTTP file directory access
+        .nest_service("/static", ServeDir::new("static")) //HTTP file directory access
+        .with_state(pool);
+
     let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
     axum::Server::bind(&addr)
         .serve(app.into_make_service())

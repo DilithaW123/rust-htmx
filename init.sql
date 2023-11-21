@@ -1,0 +1,8 @@
+DROP TABLE cases IF EXISTS;
+
+CREATE TABLE cases (
+    	id INTEGER PRIMARY KEY AUTOINCREMENT,
+    	status VARCHAR(30) NOT NULL,
+	message TEXT
+);
+	
