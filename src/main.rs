@@ -4,8 +4,8 @@ use axum::{
     extract::{Query, State},
     http::StatusCode,
     response::Html,
-    routing::get,
-    Router,
+    routing::{get, post},
+    Json, Router,
 };
 use dotenv::dotenv;
 use lazy_static::lazy_static;
@@ -51,6 +51,7 @@ async fn main() {
         .route("/", get(index))
         .route("/casetable", get(case_table))
         .route("/cases", get(cases))
+        .route("/case", post(post_case))
         .nest_service("/static", ServeDir::new("static")) //HTTP file directory access
         .with_state(pool);
 
@@ -102,6 +103,24 @@ async fn case_table(
                 StatusCode::INTERNAL_SERVER_ERROR,
                 Html("Template error".to_string()),
             )
+        }
+    }
+}
+
+#[derive(Deserialize)]
+struct CaseRequest {
+    message: String,
+}
+async fn post_case(State(pool): State<PgPool>, Json(payload): Json<CaseRequest>) -> StatusCode {
+    match sqlx::query("INSERT INTO cases (message) VALUES ($1)")
+        .bind(payload.message)
+        .execute(&pool)
+        .await
+    {
+        Ok(_) => StatusCode::CREATED,
+        Err(e) => {
+            println!("Database error: {}", e);
+            return StatusCode::INTERNAL_SERVER_ERROR;
         }
     }
 }
