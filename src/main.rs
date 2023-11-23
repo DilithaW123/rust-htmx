@@ -112,7 +112,7 @@ struct CaseRequest {
     message: String,
 }
 async fn post_case(State(pool): State<PgPool>, Json(payload): Json<CaseRequest>) -> StatusCode {
-    match sqlx::query("INSERT INTO cases (message) VALUES ($1)")
+    match sqlx::query("INSERT INTO cases (message, status) VALUES ($1, 'New')")
         .bind(payload.message)
         .execute(&pool)
         .await
