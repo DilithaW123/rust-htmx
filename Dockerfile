@@ -10,6 +10,6 @@ COPY --from=builder /usr/src/app/target/release/rust-htmx .
 COPY --from=builder /usr/src/app/static ./static
 COPY --from=builder /usr/src/app/templates ./templates
 COPY --from=builder /usr/src/app/.env ./.env
-EXPOSE 3000
+EXPOSE 8080
 CMD ["./rust-htmx"]
 
